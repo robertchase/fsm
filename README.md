@@ -166,3 +166,7 @@ If we pass an unrecognized event:
 >>> fsm.handle('huh')
 False
 ```
+
+### More fun
+
+More examples and reference documenation can be found in the `/doc` directory of the repo.
