@@ -2,7 +2,7 @@
 
 ### Finite State Machine for Python
 
-The `fsm` project allows a state-event machine to be defined and executed
+The `fsm` project allows a state-event machine to be built and executed
 in python code.
 
 The `fsm` is defined in a mini-language which is compiled to python code,
@@ -47,13 +47,16 @@ STATE on
     ACTION turn_off
 ```
 
-A special `enter` `action` has been added to the state `on`.
+It might be the case that the button is faulty, or the light is missing or broken.
+A new `action` has been created called *test*, which can verify that the light is on.
+It *emits* an `event` of `on` or `off`, based upon what it discovers.
+
+An `enter` `action` has been added to the state `on`.
 The `enter` action is triggered when a state transition causes a `state` to be entered.
 (An `exit` action can also be specified, to be triggered when a state transition causes a `state` to be exited).
-This action tests the light and returns an event `on` or `off` depending
-upon the state of the light. Nothing happens if the event `on` arrives; if the
-event `off` arrives, the machine transitions of state `off`.
-It is assumed that the `test` `action` emits an `event` of either `on` or `off`.
+This `enter` `action` tests if the light is on.
+Nothing happens if the event `on` arrives; if the
+event `off` arrives, the machine transitions back to `state` `off`.
 
 The same logic can be defined in this way:
 
@@ -72,7 +75,7 @@ STATE on
 The `test` action is executed as part of the `press` event in state `off`, and
 a transition to state `on` only happens if the `test` action returns an `on` event.
 
-A key takeaway from comparing these two state machines is that the `test` action
+A key takeaway from comparing these two state machines is that the `test` `action`
 works in either state. Action routines are meant to be very small pieces of
 code which operate without regard to state.
 
@@ -115,7 +118,7 @@ alternative methods helpful.
 ##### Actions
 
 Once an `fsm` file has been parsed, `action` routines must be written for each
-`action`. The actions are obvious by inpsection, but can be easily gotten
+`action`. The actions are obvious by inspection, but can be easily gotten
 from the parsed description:
 ```
 >>> description.actions

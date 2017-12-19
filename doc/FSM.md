@@ -71,13 +71,26 @@ an `event` name in the `fsm`.
 If an `action` routine returns an `event` name **and** the `action` directive
 is the last directive defined for the currently processing `event`, then the
 returned `event` name is immediately handled by the `fsm`.
-This feature allows a single external event to trigger an aritrarily long
+This feature allows a single external event to trigger an arbitrarily long
 sequence of `state`/`event` processes.
+
+When an `event` causes an `fsm` `state` transition,
+then *return value handling* is different:
 
 ##### state-transition return value handling
 
-If an `event` transitions to a new state, then the returned `event` name
-from the last `action` routine will be handled in the new `state`.
+If an `event` transitions the `fsm` to a new `state`,
+then any `event` returned from the last `action`
+will be handled in the new `state`.
+The last `action` is the last of:
+
+- the last `action` defined for the `event` that caused the transition
+- the `exit` `action` of the `state` being transitioned from
+- the `enter` `action` of the `state` being transitioned to
+
+The only `event` returned from an `action` that matters, is the `event`
+returned from the *last* `action`.
+Any other returned `event` is ignored.
 
 ##### action routine context
 
