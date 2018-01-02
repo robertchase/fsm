@@ -96,29 +96,3 @@ class FSM (object):
             is_internal = True  # every event after the first event is internal
 
         return True  # OK
-
-
-if '__main__' == __name__:
-    s_a = STATE('A')
-    s_b = STATE('B')
-
-    def a_1():
-        print 'act 1'
-
-    def a_2():
-        print 'act 2'
-
-    def trace(s, e, d, i):
-        print 's=%s,e=%s,is_default=%s,is_internal=%s' % (s, e, d, i)
-
-    def on_state_change(new, old):
-        print 'state change from %s to %s' % (new, old)
-
-    s_a.set_events([EVENT('A', [a_1], s_b)])
-    s_b.set_events([EVENT('B', [a_2], s_a)])
-    f = FSM([s_a, s_b])
-    f.trace = trace
-    f.on_state_change = on_state_change
-    f.state = 'A'
-    f.handle('A')
-    f.handle('B')

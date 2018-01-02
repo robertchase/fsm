@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from fsm.FSM import STATE, EVENT, FSM
 # action
 # enter

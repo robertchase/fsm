@@ -1,7 +1,9 @@
 """ MIT License
 https://github.com/robertchase/fsm/blob/master/LICENSE
 """
-from file_util.load_from_path import load_from_path
+from __future__ import absolute_import
+from ergaleia.load_from_path import load_lines_from_path
+from ergaleia.un_comment import un_comment
 from fsm.fsm_machine import create as create_machine
 import fsm.FSM as FSM
 
@@ -48,20 +50,23 @@ class Parser(object):
 
     @classmethod
     def parse(cls, data):
-        data = load_from_path(data, 'fsm')
+        data = load_lines_from_path(data, 'fsm')
         parser = cls()
         for num, line in enumerate(data, start=1):
-            line = line.split('#', 1)[0].strip()
-            if len(line):
-                line = line.split(' ', 1)
-                if len(line) == 1:
-                    raise Exception('too few tokens, line=%d' % num)
+            line = un_comment(line)
+            if not line:
+                continue
+            line = line.split(' ', 1)
+            if len(line) == 1:
+                raise Exception('too few tokens, line=%d' % num)
 
-                event, parser.line = line
-                if not parser.fsm.handle(event.lower()):
-                    raise Exception("Unexpected directive '%s', line=%d" % (event, num))
-                if parser.error:
-                    raise Exception('%s, line=%d' % (parser.error, num))
+            event, parser.line = line
+            if not parser.fsm.handle(event.lower()):
+                raise Exception(
+                    "Unexpected directive '{}', line={}".format(event, num)
+                )
+            if parser.error:
+                raise Exception('%s, line=%d' % (parser.error, num))
         return parser
 
     def build(self, **actions):
@@ -174,4 +179,4 @@ if __name__ == '__main__':
 
     f = open(sys.argv[1]) if len(sys.argv) > 1 else sys.stdin
     fsm = Parser.parse(f.readlines())
-    print fsm
+    print(fsm)
