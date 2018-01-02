@@ -5,7 +5,7 @@
 The `fsm` project allows a state-event machine to be built and executed
 in python code.
 
-The `fsm` is defined in a mini-language which is compiled to python code,
+The `fsm` is defined in a mini-language (DSL) which is compiled to python code,
 allowing it to respond to `events` and call `action` routines in accordance with
 the state machine definition.
 
@@ -52,11 +52,10 @@ A new `action` has been created called *test*, which can verify that the light i
 It *emits* an `event` of `on` or `off`, based upon what it discovers.
 
 An `enter` `action` has been added to the state `on`.
-The `enter` action is triggered when a state transition causes a `state` to be entered.
-(An `exit` action can also be specified, to be triggered when a state transition causes a `state` to be exited).
-This `enter` `action` tests if the light is on.
-Nothing happens if the event `on` arrives; if the
-event `off` arrives, the machine transitions back to `state` `off`.
+The `enter` action is triggered when the `on` `state` is entered.
+This `action` tests if the light is on.
+Nothing happens if the *test* `action` emits the `event` `on`; if the
+event `off` is emitted, the machine transitions back to `state` `off`.
 
 The same logic can be defined in this way:
 
@@ -72,14 +71,14 @@ STATE on
     ACTION turn_off
 ```
 
-The `test` action is executed as part of the `press` event in state `off`, and
-a transition to state `on` only happens if the `test` action returns an `on` event.
+The *test* `action` is executed as part of the `press` event in state `off`, and
+a transition to state `on` only happens if the *test* `action` returns an `on` event.
 
-A key takeaway from comparing these two state machines is that the `test` `action`
+A key takeaway from comparing these two state machines is that the *test* `action`
 works in either state. Action routines are meant to be very small pieces of
 code which operate without regard to state.
 
-The if/elif/else logic which would normally accompany these state management
+The `if/elif/else` logic which would normally accompany these state management
 problems is abstracted into the `fsm` definition, and the coding is simplified
 into a collection of focused action routines.
 
@@ -110,7 +109,7 @@ description = parser.parse([
     '    ACTION turn_off',
 ])
 ```
-It is best practice to create keep the `fsm` description in a separate file within
+It is best practice to keep the `fsm` description in a separate file within
 the python directory structure, accessed with dot-notation.
 Tests, or other special cases, may find the
 alternative methods helpful.
