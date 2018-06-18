@@ -20,3 +20,13 @@ STATE event
     EVENT state state
 
 STATE error
+
+# ---
+
+CONTEXT fsm.actions.Context
+
+HANLDER action fsm.actions.act_action
+HANLDER enter fsm.actions.act_enter
+HANLDER event fsm.actions.act_event
+HANLDER exit fsm.actions.act_exit
+HANDLER state fsm.actions.act_state

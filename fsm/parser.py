@@ -7,29 +7,45 @@ from ergaleia.un_comment import un_comment
 from fsm.fsm_machine import create as create_machine
 import fsm.FSM as FSM
 
+from functools import partial
+import fsm.actions as fsm_actions
+
+
+class TooFewTokens(Exception):
+    def __init__(self, line):
+        super(TooFewTokens, self).__init__(
+            'too few tokens, line={}'.format(line)
+        )
+
+
+class UnexpectedDirective(Exception):
+    def __init__(self, directive, line):
+        super(UnexpectedDirective, self).__init__(
+            "unexpected directive '{}', line={}".format(directive, line)
+        )
+
 
 class Parser(object):
 
     def __init__(self):
-        self.error = None
-        self.states = {}
-        self.first_state = None
-        self.state = None
-        self.event = None
-        self._actions = {}
+
+        ctx = fsm_actions.Context()
+
         self.fsm = create_machine(
-            action=self.act_action,
-            enter=self.act_enter,
-            event=self.act_event,
-            exit=self.act_exit,
-            state=self.act_state,
+            action=partial(fsm_actions.act_action, ctx),
+            enter=partial(fsm_actions.act_enter, ctx),
+            event=partial(fsm_actions.act_event, ctx),
+            exit=partial(fsm_actions.act_exit, ctx),
+            state=partial(fsm_actions.act_state, ctx),
         )
+        self.fsm.context = ctx
         self.fsm.state = 'init'
 
     def __str__(self):
-        states = self.states
+        context = self.context
+        states = context.states
         d = 'from fsm.FSM import STATE, EVENT, FSM\n'
-        d += '\n'.join('# ' + a for a in sorted(self._actions))
+        d += '\n'.join('# ' + a for a in context._actions)
         d += '\ndef create(**actions):\n'
         d += '\n'.join(self.define(s) for s in states.values())
         d += '\n' + '\n'.join(self.set_events(s) for s in states.values())
@@ -37,36 +53,40 @@ class Parser(object):
         return d
 
     @property
+    def context(self):
+        return self.fsm.context
+
+    @property
+    def first_state(self):
+        return self.context.first_state
+
+    @property
     def actions(self):
-        return sorted(self._actions.keys())
+        return self.context.actions
 
     @property
     def events(self):
-        events = []
-        for state in self.states.values():
-            for event in state['events'].values():
-                events.append(event['name'])
-        return list(set(events))
+        return self.context.events
 
     @classmethod
     def parse(cls, data):
-        data = load_lines_from_path(data, 'fsm')
         parser = cls()
-        for num, line in enumerate(data, start=1):
-            line = un_comment(line)
+        context = parser.context
+        for num, line in enumerate(
+                    un_comment(load_lines_from_path(data, 'fsm')),
+                    start=1
+                ):
             if not line:
                 continue
             line = line.split(' ', 1)
             if len(line) == 1:
-                raise Exception('too few tokens, line=%d' % num)
+                raise TooFewTokens(num)
 
-            event, parser.line = line
+            event, context.line = line
+            context.line_num = num
+
             if not parser.fsm.handle(event.lower()):
-                raise Exception(
-                    "Unexpected directive '{}', line={}".format(event, num)
-                )
-            if parser.error:
-                raise Exception('%s, line=%d' % (parser.error, num))
+                raise UnexpectedDirective(event, num)
         return parser
 
     def build(self, **actions):
@@ -114,64 +134,6 @@ class Parser(object):
             s += "),"
         s += '])'
         return s
-
-    def act_state(self):
-        if len(self.line.split()) != 1:
-            self.error = 'STATE name must be a single token'
-            return 'error'
-        name = self.line.strip()
-        if name in self.states.keys():
-            self.error = 'duplicate STATE name'
-            return 'error'
-        if self.first_state is None:
-            self.first_state = name
-        self.state = dict(name=name, enter=None, exit=None, events={})
-        self.states[name] = self.state
-
-    def act_enter(self):
-        if len(self.line.split()) != 1:
-            self.error = 'ENTER action must be a single token'
-            return 'error'
-        name = self.line.strip()
-        if self.state['enter'] is not None:
-            self.error = 'only one ENTER action allowed'
-            return 'error'
-        self.state['enter'] = name
-        self._actions[name] = True
-
-    def act_exit(self):
-        if len(self.line.split()) != 1:
-            self.error = 'EXIT action must be a single token'
-            return 'error'
-        name = self.line.strip()
-        if self.state['exit'] is not None:
-            self.error = 'only one EXIT action allowed'
-            return 'error'
-        self.state['exit'] = name
-        self._actions[name] = True
-
-    def act_event(self):
-        if len(self.line.split()) == 2:
-            name, next_state = self.line.strip().split()
-        elif len(self.line.split()) != 1:
-            self.error = 'EVENT can only have one or two tokens'
-            return 'error'
-        else:
-            name = self.line.strip()
-            next_state = None
-        self.event = dict(name=name, actions=[], next=next_state)
-        self.state['events'][name] = self.event
-
-    def act_action(self):
-        if len(self.line.split()) != 1:
-            self.error = 'ACTION can only have one token'
-            return 'error'
-        name = self.line.strip()
-        if name in self.event['actions']:
-            self.error = 'duplicate ACTION name'
-            return 'error'
-        self.event['actions'].append(name)
-        self._actions[name] = True
 
 
 if __name__ == '__main__':
