@@ -8,7 +8,7 @@ def test_basic():
 
 
 def test_too_few_tokens():
-    with pytest.raises(parser.TooFewTokens):
+    with pytest.raises(actions.TooFewTokens):
         parser.Parser.parse([
             'FOO',
         ])

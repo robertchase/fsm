@@ -11,6 +11,9 @@ STATE state
     EVENT event event
     EVENT state state
 
+    EVENT context context
+    EVENT handler handler
+
 STATE event
     ENTER event
     EVENT error error
@@ -19,14 +22,25 @@ STATE event
     EVENT event event
     EVENT state state
 
+    EVENT context context
+    EVENT handler handler
+
+STATE context
+    ENTER context
+    EVENT handler handler
+
+STATE handler
+    ENTER handler
+    EVENT handler handler
+
 STATE error
 
 # ---
 
 CONTEXT fsm.actions.Context
 
-HANLDER action fsm.actions.act_action
-HANLDER enter fsm.actions.act_enter
-HANLDER event fsm.actions.act_event
-HANLDER exit fsm.actions.act_exit
+HANDLER action fsm.actions.act_action
+HANDLER enter fsm.actions.act_enter
+HANDLER event fsm.actions.act_event
+HANDLER exit fsm.actions.act_exit
 HANDLER state fsm.actions.act_state

@@ -2,20 +2,14 @@
 https://github.com/robertchase/fsm/blob/master/LICENSE
 """
 from __future__ import absolute_import
+from functools import partial
+
 from ergaleia.load_from_path import load_lines_from_path
 from ergaleia.un_comment import un_comment
+
+import fsm.actions as fsm_actions
 from fsm.fsm_machine import create as create_machine
 import fsm.FSM as FSM
-
-from functools import partial
-import fsm.actions as fsm_actions
-
-
-class TooFewTokens(Exception):
-    def __init__(self, line):
-        super(TooFewTokens, self).__init__(
-            'too few tokens, line={}'.format(line)
-        )
 
 
 class UnexpectedDirective(Exception):
@@ -33,19 +27,21 @@ class Parser(object):
 
         self.fsm = create_machine(
             action=partial(fsm_actions.act_action, ctx),
+            context=partial(fsm_actions.act_context, ctx),
             enter=partial(fsm_actions.act_enter, ctx),
             event=partial(fsm_actions.act_event, ctx),
             exit=partial(fsm_actions.act_exit, ctx),
+            handler=partial(fsm_actions.act_handler, ctx),
             state=partial(fsm_actions.act_state, ctx),
         )
-        self.fsm.context = ctx
+        self.fsm.context = ctx  # TODO: does this matter?
         self.fsm.state = 'init'
 
     def __str__(self):
         context = self.context
         states = context.states
         d = 'from fsm.FSM import STATE, EVENT, FSM\n'
-        d += '\n'.join('# ' + a for a in context._actions)
+        d += '\n'.join('# ' + a for a in context.actions)
         d += '\ndef create(**actions):\n'
         d += '\n'.join(self.define(s) for s in states.values())
         d += '\n' + '\n'.join(self.set_events(s) for s in states.values())
@@ -80,7 +76,7 @@ class Parser(object):
                 continue
             line = line.split(' ', 1)
             if len(line) == 1:
-                raise TooFewTokens(num)
+                raise fsm_actions.TooFewTokens(num)
 
             event, context.line = line
             context.line_num = num

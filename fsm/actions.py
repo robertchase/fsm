@@ -1,3 +1,15 @@
+from functools import partial
+
+from ergaleia.import_by_path import import_by_path
+
+
+class TooFewTokens(Exception):
+    def __init__(self, line):
+        super(TooFewTokens, self).__init__(
+            'too few tokens, line={}'.format(line)
+        )
+
+
 class ExtraToken(Exception):
     def __init__(self, type, count=None, line=0):
         if count is None:
@@ -30,14 +42,17 @@ class Context(object):
         self.first_state = None
         self.state = None
         self.event = None
-        self._actions = {}
+        self.actions = []
+        self.context = None
+        self.handlers = {}
 
         self.line = None
         self.line_num = None
 
-    @property
-    def actions(self):
-        return sorted(self._actions.keys())
+    def add_action(self, action):
+        if action not in self.actions:
+            self.actions.append(action)
+            self.actions = sorted(self.actions)
 
     @property
     def events(self):
@@ -67,7 +82,7 @@ def act_enter(context):
     if context.state['enter'] is not None:
         raise DuplicateDirective('ENTER', context.line_num)
     context.state['enter'] = name
-    context._actions[name] = True
+    context.add_action(name)
 
 
 def act_exit(context):
@@ -77,7 +92,7 @@ def act_exit(context):
     if context.state['exit'] is not None:
         raise DuplicateDirective('EXIT', context.line_num)
     context.state['exit'] = name
-    context._actions[name] = True
+    context.add_action(name)
 
 
 def act_event(context):
@@ -99,4 +114,28 @@ def act_action(context):
     if name in context.event['actions']:
         raise DuplicateName('ACTION', context.line_num)
     context.event['actions'].append(name)
-    context._actions[name] = True
+    context.add_action(name)
+
+
+def act_context(context):
+    if len(context.line.split()) != 1:
+        raise ExtraToken('CONTEXT', line=context.line_num)
+    if context.context:
+        raise DuplicateName('CONTEXT', context.line_num)
+    context.context = import_by_path(context.line)
+
+
+def act_handler(context):
+    args = context.line.split()
+    if len(args) == 1:
+        raise TooFewTokens('HANDLER', line=context.line_num)
+    if len(args) > 2:
+        raise ExtraToken('HANDLER', line=context.line_num)
+    name, path = args
+    name = name.strip()
+    if name in context.handlers:
+        raise DuplicateName('HANDLER', context.line_num)
+    handler = import_by_path(path)
+    if context.context:
+        handler = partial(handler, context.context)
+    context.handlers[name] = handler
