@@ -39,3 +39,84 @@ def test_state_duplicate(context):
     actions.act_state(context)
     with pytest.raises(actions.DuplicateName):
         actions.act_state(context)
+
+
+@pytest.fixture
+def context_state(context):
+    context.line = 'one'
+    actions.act_state(context)
+    return context
+
+
+def test_enter(context_state):
+    context_state.line = 'two'
+    actions.act_enter(context_state)
+
+
+def test_enter_extra_token(context_state):
+    context_state.line = 'two three'
+    with pytest.raises(actions.ExtraToken):
+        actions.act_enter(context_state)
+
+
+def test_enter_duplicate_directive(context_state):
+    context_state.line = 'two'
+    actions.act_enter(context_state)
+    with pytest.raises(actions.DuplicateDirective):
+        actions.act_enter(context_state)
+
+
+def test_exit(context_state):
+    context_state.line = 'two'
+    actions.act_exit(context_state)
+
+
+def test_exit_extra_token(context_state):
+    context_state.line = 'two three'
+    with pytest.raises(actions.ExtraToken):
+        actions.act_exit(context_state)
+
+
+def test_exit_duplicate_directive(context_state):
+    context_state.line = 'two'
+    actions.act_exit(context_state)
+    with pytest.raises(actions.DuplicateDirective):
+        actions.act_exit(context_state)
+
+
+def test_event(context_state):
+    context_state.line = 'two'
+    actions.act_event(context_state)
+    context_state.line = 'three four'
+    actions.act_event(context_state)
+
+
+def test_event_extra_token(context_state):
+    context_state.line = 'two three four'
+    with pytest.raises(actions.ExtraToken):
+        actions.act_event(context_state)
+
+
+@pytest.fixture
+def context_event(context_state):
+    context_state.line = 'one'
+    actions.act_event(context_state)
+    return context_state
+
+
+def test_action(context_event):
+    context_event.line = 'one'
+    actions.act_action(context_event)
+
+
+def test_action_extra_token(context_event):
+    context_event.line = 'one two'
+    with pytest.raises(actions.ExtraToken):
+        actions.act_action(context_event)
+
+
+def test_action_duplicate_name(context_event):
+    context_event.line = 'one'
+    actions.act_action(context_event)
+    with pytest.raises(actions.DuplicateName):
+        actions.act_action(context_event)
