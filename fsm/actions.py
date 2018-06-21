@@ -4,9 +4,9 @@ from ergaleia.import_by_path import import_by_path
 
 
 class TooFewTokens(Exception):
-    def __init__(self, line):
+    def __init__(self, type, line):
         super(TooFewTokens, self).__init__(
-            'too few tokens, line={}'.format(line)
+            '{} has too few tokens, line={}'.format(type, line)
         )
 
 

@@ -120,3 +120,50 @@ def test_action_duplicate_name(context_event):
     actions.act_action(context_event)
     with pytest.raises(actions.DuplicateName):
         actions.act_action(context_event)
+        actions.act_action(context_event)
+
+
+def test_context(context):
+    assert context.context is None
+    context.line = 'fsm.actions.act_context'
+    actions.act_context(context)
+    assert context.context
+
+
+def test_context_extra_token(context):
+    context.line = 'one two'
+    with pytest.raises(actions.ExtraToken):
+        actions.act_context(context)
+
+
+def test_context_duplicate_name(context):
+    context.line = 'fsm.actions.act_context'
+    actions.act_context(context)
+    with pytest.raises(actions.DuplicateName):
+        actions.act_context(context)
+
+
+def test_handler(context):
+    assert len(context.handlers) == 0
+    context.line = 'one fsm.actions.act_context'
+    actions.act_handler(context)
+    assert len(context.handlers) == 1
+
+
+def test_handler_too_few_tokens(context):
+    context.line = 'one'
+    with pytest.raises(actions.TooFewTokens):
+        actions.act_handler(context)
+
+
+def test_handler_extra_token(context):
+    context.line = 'one two three'
+    with pytest.raises(actions.ExtraToken):
+        actions.act_handler(context)
+
+
+def test_handler_duplicate_name(context):
+    context.line = 'one fsm.actions.act_context'
+    actions.act_handler(context)
+    with pytest.raises(actions.DuplicateName):
+        actions.act_handler(context)

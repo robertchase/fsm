@@ -23,7 +23,7 @@ class Parser(object):
 
     def __init__(self):
 
-        ctx = fsm_actions.Context()
+        self.context = ctx = fsm_actions.Context()
 
         self.fsm = create_machine(
             action=partial(fsm_actions.act_action, ctx),
@@ -34,7 +34,6 @@ class Parser(object):
             handler=partial(fsm_actions.act_handler, ctx),
             state=partial(fsm_actions.act_state, ctx),
         )
-        self.fsm.context = ctx  # TODO: does this matter?
         self.fsm.state = 'init'
 
     def __str__(self):
@@ -47,10 +46,6 @@ class Parser(object):
         d += '\n' + '\n'.join(self.set_events(s) for s in states.values())
         d += '\n  return FSM([' + ','.join('S_' + s for s in states) + '])'
         return d
-
-    @property
-    def context(self):
-        return self.fsm.context
 
     @property
     def first_state(self):
@@ -76,7 +71,7 @@ class Parser(object):
                 continue
             line = line.split(' ', 1)
             if len(line) == 1:
-                raise fsm_actions.TooFewTokens(num)
+                raise fsm_actions.TooFewTokens(line[0], num)
 
             event, context.line = line
             context.line_num = num
