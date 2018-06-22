@@ -84,16 +84,16 @@ class Parser(object):
         states = {}
         for state in self.states.values():
             s = FSM.STATE(
-                name=state['name'],
-                enter=actions[state['enter']] if state['enter'] else None,
-                exit=actions[state['exit']] if state['exit'] else None,
+                name=state.name,
+                enter=actions[state.enter] if state.enter else None,
+                exit=actions[state.exit] if state.exit else None,
             )
             states[s.name] = s
-            for event in state['events'].values():
+            for event in state.events.values():
                 e = FSM.EVENT(
-                    name=event['name'],
-                    actions=[actions[n] for n in event['actions']],
-                    next_state=event['next'],
+                    name=event.name,
+                    actions=[actions[n] for n in event.actions],
+                    next_state=event.next_state,
                 )
                 s.events[e.name] = e
         for state in states.values():
@@ -106,22 +106,22 @@ class Parser(object):
 
     @staticmethod
     def define(state):
-        s = "  S_%s=STATE('%s'" % (state['name'], state['name'])
-        if state['enter']:
-            s += ",enter=actions['%s']" % state['enter']
-        if state['exit']:
-            s += ",exit=actions['%s']" % state['exit']
+        s = "  S_{0}=STATE('{0}'".format(state.name)
+        if state.enter:
+            s += ",enter=actions['{}']".format(state.enter)
+        if state.exit:
+            s += ",exit=actions['{}']".format(state.exit)
         return s + ')'
 
     @staticmethod
     def set_events(state):
-        s = "  S_%s.set_events([" % state['name']
-        for e in state['events'].values():
-            s += "EVENT('%s',[" % e['name']
-            s += ','.join("actions['%s']" % a for a in e['actions'])
+        s = "  S_{}.set_events([".format(state.name)
+        for e in state.events.values():
+            s += "EVENT('{}',[".format(e.name)
+            s += ','.join("actions['{}']".format(a) for a in e.actions)
             s += ']'
-            if e['next']:
-                s += ', S_%s' % e['next']
+            if e.next_state:
+                s += ', S_{}'.format(e.next_state)
             s += "),"
         s += '])'
         return s

@@ -35,6 +35,23 @@ class DuplicateDirective(Exception):
         )
 
 
+class State(object):
+
+    def __init__(self, name):
+        self.name = name
+        self.enter = None
+        self.exit = None
+        self.events = {}
+
+
+class Event(object):
+
+    def __init__(self, name, next_state):
+        self.name = name
+        self.next_state = next_state
+        self.actions = []
+
+
 class Context(object):
 
     def __init__(self):
@@ -72,7 +89,7 @@ def act_state(context):
         raise DuplicateName('STATE', context.line_num)
     if context.first_state is None:
         context.first_state = name
-    context.state = dict(name=name, enter=None, exit=None, events={})
+    context.state = State(name)
     context.states[name] = context.state
 
 
@@ -81,9 +98,9 @@ def act_enter(context):
     if len(args) != 1:
         raise ExtraToken('ENTER', line=context.line_num)
     name = args[0].strip()
-    if context.state['enter'] is not None:
+    if context.state.enter is not None:
         raise DuplicateDirective('ENTER', context.line_num)
-    context.state['enter'] = name
+    context.state.enter = name
     context.add_action(name)
 
 
@@ -92,9 +109,9 @@ def act_exit(context):
     if len(args) != 1:
         raise ExtraToken('EXIT', line=context.line_num)
     name = args[0].strip()
-    if context.state['exit'] is not None:
+    if context.state.exit is not None:
         raise DuplicateDirective('EXIT', context.line_num)
-    context.state['exit'] = name
+    context.state.exit = name
     context.add_action(name)
 
 
@@ -107,8 +124,8 @@ def act_event(context):
     else:
         name = args[0].strip()
         next_state = None
-    context.event = dict(name=name, actions=[], next=next_state)
-    context.state['events'][name] = context.event
+    context.event = Event(name, next_state)
+    context.state.events[name] = context.event
 
 
 def act_action(context):
@@ -116,9 +133,9 @@ def act_action(context):
     if len(args) != 1:
         raise ExtraToken('ACTION', line=context.line_num)
     name = args[0].strip()
-    if name in context.event['actions']:
+    if name in context.event.actions:
         raise DuplicateName('ACTION', context.line_num)
-    context.event['actions'].append(name)
+    context.event.actions.append(name)
     context.add_action(name)
 
 
