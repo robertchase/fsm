@@ -107,6 +107,8 @@ def context_event(context_state):
 def test_action(context_event):
     context_event.line = 'one'
     actions.act_action(context_event)
+    context_event.line = 'two'
+    actions.act_enter(context_event)
 
 
 def test_action_extra_token(context_event):

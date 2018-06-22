@@ -115,7 +115,7 @@ def act_action(context):
     args = context.line.split()
     if len(args) != 1:
         raise ExtraToken('ACTION', line=context.line_num)
-    name = args[0].split()
+    name = args[0].strip()
     if name in context.event['actions']:
         raise DuplicateName('ACTION', context.line_num)
     context.event['actions'].append(name)
