@@ -75,8 +75,8 @@ class Context(object):
     def events(self):
         events = []
         for state in self.states.values():
-            for event in state['events'].values():
-                events.append(event['name'])
+            for event in state.events.values():
+                events.append(event.name)
         return list(set(events))
 
 

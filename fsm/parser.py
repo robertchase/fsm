@@ -56,6 +56,10 @@ class Parser(object):
         return self.context.actions
 
     @property
+    def states(self):
+        return self.context.states
+
+    @property
     def events(self):
         return self.context.events
 
@@ -79,6 +83,16 @@ class Parser(object):
             if not parser.fsm.handle(event.lower()):
                 raise UnexpectedDirective(event, num)
         return parser
+
+    @classmethod
+    def load(cls, path, *args, **kwargs):
+        p = cls.parse(path)
+        if p.context.context:
+            context = p.context.context(*args, **kwargs)
+            handlers = p.context.handlers
+            for n, v in handlers.items():
+                handlers[n] = partial(v, context)
+        return p.build(**p.context.handlers)
 
     def build(self, **actions):
         states = {}
