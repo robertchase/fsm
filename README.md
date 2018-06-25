@@ -116,8 +116,8 @@ alternative methods helpful.
 
 ##### Actions
 
-Once an `fsm` file has been parsed, `action` routines must be written for each
-`action`. The actions are obvious by inspection, but can be easily gotten
+Once an `fsm` file has been parsed, `action` routines must be assigned for each
+`action`. The list of actions are obvious by inspection, but can be easily gotten
 from the parsed description:
 ```
 >>> description.actions
@@ -167,6 +167,58 @@ If we pass an unrecognized event:
 ```
 >>> fsm.handle('huh')
 False
+```
+
+### A more concise example:
+
+This code lives in the `example` directory,
+in `light.fsm` and `light.py`,
+demonstrating
+how the `parse` and `build` functions, used above, can be combined into
+a single `load` function.
+
+Here is the machine description:
+```
+STATE off
+  EVENT press on
+    ACTION turn_on
+STATE on
+  EVENT press off
+    ACTION turn_off
+HANDLER turn_on example.light.turn_on
+HANDLER turn_off example.light.turn_off
+```
+
+Each `HANDLER` directive assigns a dynamically imported callable
+to an `action` name, in this case, binding the `turn_on` and `turn_off`
+functions to the machine.
+
+Here is the code:
+
+```
+def turn_on():
+    print('the light is on')
+
+def turn_off():
+    print('the light is off')
+
+if __name__ == '__main__':
+    from fsm.parser import Parser
+
+    fsm = Parser.load('example.light.fsm')
+
+    fsm.handle('press')
+    fsm.handle('press')
+    fsm.handle('press')
+```
+
+Here is the code being run:
+
+```
+~/git/fsm # PYTHONPATH=~/git/ergaleia python -m example.light
+the light is on
+the light is off
+the light is on
 ```
 
 ### More fun

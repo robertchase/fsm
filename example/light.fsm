@@ -1,0 +1,8 @@
+STATE off
+  EVENT press on
+    ACTION turn_on
+STATE on
+  EVENT press off
+    ACTION turn_off
+HANDLER turn_on example.light.turn_on
+HANDLER turn_off example.light.turn_off
