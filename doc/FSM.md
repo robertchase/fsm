@@ -34,7 +34,9 @@ STATE state_name
 ```
 
 The `state` directive defines the start of a new `state`. All subsequent
-directives will apply to this `state` until a new `state` directive is encountered.
+directives will apply to this `state` until a new
+`state`, `context` or `handler`
+directive is encountered.
 A `state`'s name must be unique within the `fsm`.
 
 ### EVENT
@@ -45,8 +47,9 @@ EVENT event_name <new_state>
 
 The `event` directive describes what happens when an `event` arrives
 while the `fsm` is in the current `state`.
-Any subsequent `action` directives will apply to this `event` until a new `state`,
-`event`, `enter` or `exit` directive is encountered.
+Any subsequent `action` directives will apply to this `event` until a new
+`state`, `event`, `enter`, `exit`, `context` or `handler`
+directive is encountered.
 
 If a `new_state` argument is specified,
 the `fsm` will transition to that `state` after processing any
@@ -97,3 +100,30 @@ Any other returned `event` is ignored.
 If a set of `action` routines needs to operate against a shared context,
 then those routines can be specified as methods on a context object.
 The `fsm` does not need to be aware of this.
+Alternatively, the action routines can share a context as defined in
+the `context` directive below.
+
+### CONTEXT
+
+```
+CONTEXT path
+```
+
+The `context` directive defines a shared object to be passed to each
+`action` routine.
+
+The `path` is a dot-delimited path to a callable which is
+invoked with the `args` and `kwargs` of the parser's `load`
+method, returning an object.
+
+The `context` directive only works with `action` routines defined
+with the `handler` directive, and loaded with the `load` method.
+
+### HANDLER
+
+```
+HANDLER name path
+```
+
+The `handler` directive defines a callable to be invoked for
+an `action` defined in the finite state machine.

@@ -23,24 +23,23 @@ class Parser(object):
 
     def __init__(self):
 
-        self.context = ctx = fsm_actions.Context()
+        self.ctx = fsm_actions.Context()
 
         self.fsm = create_machine(
-            action=partial(fsm_actions.act_action, ctx),
-            context=partial(fsm_actions.act_context, ctx),
-            enter=partial(fsm_actions.act_enter, ctx),
-            event=partial(fsm_actions.act_event, ctx),
-            exit=partial(fsm_actions.act_exit, ctx),
-            handler=partial(fsm_actions.act_handler, ctx),
-            state=partial(fsm_actions.act_state, ctx),
+            action=partial(fsm_actions.act_action, self.ctx),
+            context=partial(fsm_actions.act_context, self.ctx),
+            enter=partial(fsm_actions.act_enter, self.ctx),
+            event=partial(fsm_actions.act_event, self.ctx),
+            exit=partial(fsm_actions.act_exit, self.ctx),
+            handler=partial(fsm_actions.act_handler, self.ctx),
+            state=partial(fsm_actions.act_state, self.ctx),
         )
         self.fsm.state = 'init'
 
     def __str__(self):
-        context = self.context
-        states = context.states
+        states = self.states
         d = 'from fsm.FSM import STATE, EVENT, FSM\n'
-        d += '\n'.join('# ' + a for a in context.actions)
+        d += '\n'.join('# ' + a for a in self.actions)
         d += '\ndef create(**actions):\n'
         d += '\n'.join(self.define(s) for s in states.values())
         d += '\n' + '\n'.join(self.set_events(s) for s in states.values())
@@ -49,24 +48,32 @@ class Parser(object):
 
     @property
     def first_state(self):
-        return self.context.first_state
+        return self.ctx.first_state
 
     @property
     def actions(self):
-        return self.context.actions
+        return self.ctx.actions
 
     @property
     def states(self):
-        return self.context.states
+        return self.ctx.states
 
     @property
     def events(self):
-        return self.context.events
+        return self.ctx.events
+
+    @property
+    def context(self):
+        return self.ctx.context
+
+    @property
+    def handlers(self):
+        return self.ctx.handlers
 
     @classmethod
     def parse(cls, data):
         parser = cls()
-        context = parser.context
+        ctx = parser.ctx
         for num, line in enumerate(
                     un_comment(load_lines_from_path(data, 'fsm')),
                     start=1
@@ -77,8 +84,8 @@ class Parser(object):
             if len(line) == 1:
                 raise fsm_actions.TooFewTokens(line[0], num)
 
-            event, context.line = line
-            context.line_num = num
+            event, ctx.line = line
+            ctx.line_num = num
 
             if not parser.fsm.handle(event.lower()):
                 raise UnexpectedDirective(event, num)
@@ -87,12 +94,14 @@ class Parser(object):
     @classmethod
     def load(cls, path, *args, **kwargs):
         p = cls.parse(path)
-        if p.context.context:
-            context = p.context.context(*args, **kwargs)
-            handlers = p.context.handlers
-            for n, v in handlers.items():
-                handlers[n] = partial(v, context)
-        return p.build(**p.context.handlers)
+        p.bind(*args, **kwargs)
+        return p.build(**p.ctx.handlers)
+
+    def bind(self, *args, **kwargs):
+        if self.context:
+            self.context = self.context(*args, **kwargs)
+            for n, h in self.handlers.items():
+                self.handlers[n] = partial(h, self.context)
 
     def build(self, **actions):
         states = {}
@@ -145,5 +154,5 @@ if __name__ == '__main__':
     import sys
 
     f = open(sys.argv[1]) if len(sys.argv) > 1 else sys.stdin
-    fsm = Parser.parse(f.readlines())
-    print(fsm)
+    parser = Parser.parse(f.readlines())
+    print(parser)
