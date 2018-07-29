@@ -153,6 +153,4 @@ class Parser(object):
 if __name__ == '__main__':
     import sys
 
-    f = open(sys.argv[1]) if len(sys.argv) > 1 else sys.stdin
-    parser = Parser.parse(f.readlines())
-    print(parser)
+    print(Parser.parse(sys.argv[1] if len(sys.argv) > 1 else sys.stdin))

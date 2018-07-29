@@ -1,5 +1,3 @@
-from functools import partial
-
 from ergaleia.import_by_path import import_by_path
 
 
@@ -158,6 +156,4 @@ def act_handler(context):
     if name in context.handlers:
         raise DuplicateName('HANDLER', context.line_num)
     handler = import_by_path(path)
-    if context.context:
-        handler = partial(handler, context.context)
     context.handlers[name] = handler

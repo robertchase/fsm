@@ -11,7 +11,7 @@
 #             with pytest installed
 #
 TEST_GIT=${TEST_GIT:-$HOME/git}
-TEST_IMAGE=${TEST_IMAGE:-bob/python3.6}
+TEST_IMAGE=${TEST_IMAGE:-bob/pythondev}
 
 CMD=${*:-tests}
 GIT=/opt/git
