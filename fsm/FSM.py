@@ -3,20 +3,20 @@ https://github.com/robertchase/fsm/blob/master/LICENSE
 """
 
 
-class STATE (object):
+class STATE(object):
 
-    def __init__(self, name, enter=None, exit=None):
+    def __init__(self, name, on_enter=None, on_exit=None):
         self.name = name
         self.events = {}
-        self.enter = enter
-        self.exit = exit
+        self.enter = on_enter
+        self.exit = on_exit
 
     def set_events(self, events):
         for event in events:
             self.events[event.name] = event
 
 
-class EVENT (object):
+class EVENT(object):
 
     def __init__(self, name, actions, next_state=None):
         self.name = name
@@ -24,16 +24,16 @@ class EVENT (object):
         self.next_state = next_state
 
 
-class FSM (object):
+class FSM(object):
 
     def __init__(self, states):
         self.states = {}
         for state in states:
             self.states[state.name] = state
         self._state = None
-        self.on_state_change = None
-        self.trace = None
-        self.undefined = None
+        self.on_state_change = lambda x, y: None
+        self.trace = lambda a, b, c, d: None
+        self.undefined = lambda a, b, c, d: None
 
     @property
     def state(self):
@@ -53,8 +53,7 @@ class FSM (object):
             if self._state.exit:
                 next_event = self._state.exit()
 
-            if self.on_state_change:
-                self.on_state_change(event.next_state.name, self._state.name)
+            self.on_state_change(event.next_state.name, self._state.name)
             self._state = event.next_state
 
             if self._state.enter:
@@ -82,13 +81,11 @@ class FSM (object):
                 state_event = None
 
             # --- trace
-            if self.trace:
-                self.trace(self._state.name, event, is_default, is_internal)
+            self.trace(self._state.name, event, is_default, is_internal)
 
             # --- no event handler
             if not state_event:
-                if self.undefined:
-                    self.undefined(self._state.name, event, False, is_internal)
+                self.undefined(self._state.name, event, False, is_internal)
                 return False  # event not handled!
 
             # --- handle, if non-null event is returned, keep going

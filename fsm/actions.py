@@ -1,28 +1,32 @@
+""" MIT License
+https://github.com/robertchase/fsm/blob/master/LICENSE
+"""
+# pylint: disable=too-many-instance-attributes
 from ergaleia.import_by_path import import_by_path
 
 
 class TooFewTokens(Exception):
-    def __init__(self, type, line):
+    def __init__(self, directive, line):
         super(TooFewTokens, self).__init__(
-            '{} has too few tokens, line={}'.format(type, line)
+            '{} has too few tokens, line={}'.format(directive, line)
         )
 
 
 class ExtraToken(Exception):
-    def __init__(self, type, count=None, line=0):
+    def __init__(self, directive, count=None, line=0):
         if count is None:
             count, token = 'one', 'token'
         else:
             token = 'tokens'
         super(ExtraToken, self).__init__(
-            '{} must have {} {}, line={}'.format(type, count, token, line)
+            '{} must have {} {}, line={}'.format(directive, count, token, line)
         )
 
 
 class DuplicateName(Exception):
-    def __init__(self, type, line):
+    def __init__(self, directive, line):
         super(DuplicateName, self).__init__(
-            'duplicate {} name, line={}'.format(type, line)
+            'duplicate {} name, line={}'.format(directive, line)
         )
 
 

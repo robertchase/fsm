@@ -1,6 +1,7 @@
 """ MIT License
 https://github.com/robertchase/fsm/blob/master/LICENSE
 """
+# pylint: disable=not-callable
 from __future__ import absolute_import
 from functools import partial
 
@@ -39,6 +40,7 @@ class Parser(object):
     def __str__(self):
         states = self.states
         d = 'from fsm.FSM import STATE, EVENT, FSM\n'
+        d += '# pylint: skip-file\n'
         d += '\n'.join('# ' + a for a in self.actions)
         d += '\ndef create(**actions):\n'
         d += '\n'.join(self.define(s) for s in states.values())
@@ -75,9 +77,10 @@ class Parser(object):
         parser = cls()
         ctx = parser.ctx
         for num, line in enumerate(
-                    un_comment(load_lines_from_path(data, 'fsm')),
-                    start=1
-                ):
+                un_comment(
+                    load_lines_from_path(data, 'fsm')
+                ),
+                start=1):
             if not line:
                 continue
             line = line.split(' ', 1)
@@ -108,8 +111,8 @@ class Parser(object):
         for state in self.states.values():
             s = FSM.STATE(
                 name=state.name,
-                enter=actions[state.enter] if state.enter else None,
-                exit=actions[state.exit] if state.exit else None,
+                on_enter=actions[state.enter] if state.enter else None,
+                on_exit=actions[state.exit] if state.exit else None,
             )
             states[s.name] = s
             for event in state.events.values():
@@ -131,9 +134,9 @@ class Parser(object):
     def define(state):
         s = "  S_{0}=STATE('{0}'".format(state.name)
         if state.enter:
-            s += ",enter=actions['{}']".format(state.enter)
+            s += ",on_enter=actions['{}']".format(state.enter)
         if state.exit:
-            s += ",exit=actions['{}']".format(state.exit)
+            s += ",on_exit=actions['{}']".format(state.exit)
         return s + ')'
 
     @staticmethod
