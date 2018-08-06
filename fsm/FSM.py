@@ -1,9 +1,20 @@
-""" MIT License
-https://github.com/robertchase/fsm/blob/master/LICENSE
+"""Structures and logic for the Finite State Machine.
+
+    MIT License
+    https://github.com/robertchase/fsm/blob/master/LICENSE
 """
 
 
 class STATE(object):
+    """FSM state
+
+        Arguments:
+        name -- unique state name
+
+        Keyword Arguments:
+        on_enter -- action to run when state is entered (callable)
+        on_exit -- action to run when state is exited (callable)
+    """
 
     def __init__(self, name, on_enter=None, on_exit=None):
         self.name = name
@@ -12,11 +23,21 @@ class STATE(object):
         self.exit = on_exit
 
     def set_events(self, events):
+        """Add a list of EVENT objects to the state."""
         for event in events:
             self.events[event.name] = event
 
 
 class EVENT(object):
+    """FSM event
+
+        Arguments:
+        name -- unique event name
+        actions -- list of actions associated with event (callables)
+
+        Keyword Arguments:
+        next_state -- state to transition to afer processing event
+    """
 
     def __init__(self, name, actions, next_state=None):
         self.name = name
@@ -25,6 +46,11 @@ class EVENT(object):
 
 
 class FSM(object):
+    """Finite state machine
+
+        Arguments:
+        states -- list of STATE objects
+    """
 
     def __init__(self, states):
         self.states = {}
@@ -37,6 +63,7 @@ class FSM(object):
 
     @property
     def state(self):
+        """Return the current state name."""
         return self._state.name
 
     @state.setter
@@ -62,6 +89,11 @@ class FSM(object):
         return next_event
 
     def handle(self, event):
+        """Handle one event in the current state.
+
+        Arguments:
+        event -- name of event to handle
+        """
         is_internal = False
 
         while event:

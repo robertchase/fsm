@@ -14,6 +14,7 @@ import fsm.FSM as FSM
 
 
 class UnexpectedDirective(Exception):
+    """Unexpected directive in fsm description file."""
     def __init__(self, directive, line):
         super(UnexpectedDirective, self).__init__(
             "unexpected directive '{}', line={}".format(directive, line)
@@ -21,6 +22,7 @@ class UnexpectedDirective(Exception):
 
 
 class Parser(object):
+    """FSM description file parser."""
 
     def __init__(self):
 
@@ -43,37 +45,48 @@ class Parser(object):
         d += '# pylint: skip-file\n'
         d += '\n'.join('# ' + a for a in self.actions)
         d += '\ndef create(**actions):\n'
-        d += '\n'.join(self.define(s) for s in states.values())
-        d += '\n' + '\n'.join(self.set_events(s) for s in states.values())
+        d += '\n'.join(self._define(s) for s in states.values())
+        d += '\n' + '\n'.join(self._set_events(s) for s in states.values())
         d += '\n  return FSM([' + ','.join('S_' + s for s in states) + '])'
         return d
 
     @property
     def first_state(self):
+        """Return the first state defined in the fsm descriptio file."""
         return self.ctx.first_state
 
     @property
     def actions(self):
+        """Return a list of the action names in sorted order."""
         return self.ctx.actions
 
     @property
     def states(self):
+        """Return a dict of state object by name."""
         return self.ctx.states
 
     @property
     def events(self):
+        """Return a list of the event names."""
         return self.ctx.events
 
     @property
     def context(self):
+        """Return the context."""
         return self.ctx.context
 
     @property
     def handlers(self):
+        """Return a dict of handler callables by name."""
         return self.ctx.handlers
 
     @classmethod
     def parse(cls, data):
+        """Parse an fsm description file.
+
+            Arguments:
+            data --- list, file, filename or filepath
+        """
         parser = cls()
         ctx = parser.ctx
         for num, line in enumerate(
@@ -96,17 +109,38 @@ class Parser(object):
 
     @classmethod
     def load(cls, path, *args, **kwargs):
+        """Parse, bind and build an FSM from an fsm description file.
+
+            Arguments:
+            path -- list, file, filename or filepath
+            *args -- passed to the context, if specified in description
+            **kwargs -- passed to the context, if specified in description
+
+            Returns:
+            fsm.FSM.FSM
+        """
         p = cls.parse(path)
         p.bind(*args, **kwargs)
         return p.build(**p.ctx.handlers)
 
     def bind(self, *args, **kwargs):
+        """Bind the context to the action routines.
+
+            If a CONTEXT and HANDLER(s) are defined in the fsm description
+            file, the CONTEXT is initialized with *args and **kwargs,
+            and bound to each action routine as the first argument.
+        """
         if self.context:
             self.context = self.context(*args, **kwargs)
             for n, h in self.handlers.items():
                 self.handlers[n] = partial(h, self.context)
 
     def build(self, **actions):
+        """Construct an FSM from a parsed fsm description file.
+
+            Keyword arguments:
+            **actions -- each action routine callable
+        """
         states = {}
         for state in self.states.values():
             s = FSM.STATE(
@@ -131,7 +165,7 @@ class Parser(object):
         return fsm
 
     @staticmethod
-    def define(state):
+    def _define(state):
         s = "  S_{0}=STATE('{0}'".format(state.name)
         if state.enter:
             s += ",on_enter=actions['{}']".format(state.enter)
@@ -140,8 +174,8 @@ class Parser(object):
         return s + ')'
 
     @staticmethod
-    def set_events(state):
-        s = "  S_{}.set_events([".format(state.name)
+    def _set_events(state):
+        s = "  S_{}._set_events([".format(state.name)
         for e in state.events.values():
             s += "EVENT('{}',[".format(e.name)
             s += ','.join("actions['{}']".format(a) for a in e.actions)

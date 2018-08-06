@@ -1,3 +1,3 @@
 [MESSAGES CONTROL]
 
-disable=invalid-name,missing-docstring,useless-import-alias,useless-object-inheritance,too-few-public-methods
+disable=invalid-name,useless-import-alias,useless-object-inheritance,too-few-public-methods
