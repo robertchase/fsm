@@ -43,6 +43,7 @@ class Parser(object):
         states = self.states
         d = 'from fsm.FSM import STATE, EVENT, FSM\n'
         d += '# pylint: skip-file\n'
+        d += '# flake8: noqa\n'
         d += '\n'.join('# ' + a for a in self.actions)
         d += '\ndef create(**actions):\n'
         d += '\n'.join(self._define(s) for s in states.values())

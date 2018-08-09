@@ -1,5 +1,6 @@
 from fsm.FSM import STATE, EVENT, FSM
 # pylint: skip-file
+# flake8: noqa
 # action
 # context
 # enter
@@ -14,10 +15,10 @@ def create(**actions):
   S_context=STATE('context',on_enter=actions['context'])
   S_handler=STATE('handler',on_enter=actions['handler'])
   S_error=STATE('error')
-  S_init.set_events([EVENT('state',[], S_state),])
-  S_state.set_events([EVENT('error',[], S_error),EVENT('enter',[actions['enter']]),EVENT('exit',[actions['exit']]),EVENT('event',[], S_event),EVENT('state',[], S_state),EVENT('context',[], S_context),EVENT('handler',[], S_handler),])
-  S_event.set_events([EVENT('error',[], S_error),EVENT('action',[actions['action']]),EVENT('event',[], S_event),EVENT('state',[], S_state),EVENT('context',[], S_context),EVENT('handler',[], S_handler),])
-  S_context.set_events([EVENT('handler',[], S_handler),])
-  S_handler.set_events([EVENT('handler',[], S_handler),])
-  S_error.set_events([])
+  S_init._set_events([EVENT('state',[], S_state),])
+  S_state._set_events([EVENT('error',[], S_error),EVENT('enter',[actions['enter']]),EVENT('exit',[actions['exit']]),EVENT('event',[], S_event),EVENT('state',[], S_state),EVENT('context',[], S_context),EVENT('handler',[], S_handler),])
+  S_event._set_events([EVENT('error',[], S_error),EVENT('action',[actions['action']]),EVENT('event',[], S_event),EVENT('state',[], S_state),EVENT('context',[], S_context),EVENT('handler',[], S_handler),])
+  S_context._set_events([EVENT('handler',[], S_handler),])
+  S_handler._set_events([EVENT('handler',[], S_handler),])
+  S_error._set_events([])
   return FSM([S_init,S_state,S_event,S_context,S_handler,S_error])
