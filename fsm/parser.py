@@ -176,7 +176,7 @@ class Parser(object):
 
     @staticmethod
     def _set_events(state):
-        s = "  S_{}._set_events([".format(state.name)
+        s = "  S_{}.set_events([".format(state.name)
         for e in state.events.values():
             s += "EVENT('{}',[".format(e.name)
             s += ','.join("actions['{}']".format(a) for a in e.actions)
