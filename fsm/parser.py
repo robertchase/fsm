@@ -132,7 +132,7 @@ class Parser(object):
             and bound to each action routine as the first argument.
         """
         if self.context:
-            self.context = self.context(*args, **kwargs)
+            self.ctx.context = self.context(*args, **kwargs)
             for n, h in self.handlers.items():
                 self.handlers[n] = partial(h, self.context)
 
