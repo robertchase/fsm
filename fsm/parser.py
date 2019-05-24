@@ -163,6 +163,7 @@ class Parser(object):
                     event.next_state = states[event.next_state]
         fsm = FSM.FSM(states.values())
         fsm.state = self.first_state
+        fsm.context = self.context
         return fsm
 
     @staticmethod
