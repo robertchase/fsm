@@ -1,0 +1,14 @@
+STATE init
+  EVENT yay
+    ACTION yay
+  EVENT boo
+    ACTION boo  # throws Exception
+  EVENT error error
+STATE error
+  ENTER ohno
+  EVENT yay
+    ACTION boo  # throws Exception
+HANDLER yay example.exception.yay
+HANDLER boo example.exception.boo
+HANDLER ohno example.exception.ohno
+EXCEPTION example.exception.on_exception  # returns 'error'

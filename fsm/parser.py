@@ -31,8 +31,10 @@ class Parser(object):
         self.fsm = create_machine(
             action=partial(fsm_actions.act_action, self.ctx),
             context=partial(fsm_actions.act_context, self.ctx),
+            default=partial(fsm_actions.act_default, self.ctx),
             enter=partial(fsm_actions.act_enter, self.ctx),
             event=partial(fsm_actions.act_event, self.ctx),
+            exception=partial(fsm_actions.act_exception, self.ctx),
             exit=partial(fsm_actions.act_exit, self.ctx),
             handler=partial(fsm_actions.act_handler, self.ctx),
             state=partial(fsm_actions.act_state, self.ctx),
@@ -80,6 +82,12 @@ class Parser(object):
     def handlers(self):
         """Return a dict of handler callables by name."""
         return self.ctx.handlers
+
+    @property
+    def exception(self):
+        """Return the exception handler or None.
+        """
+        return self.ctx.exception
 
     @classmethod
     def parse(cls, data):
@@ -129,12 +137,15 @@ class Parser(object):
 
             If a CONTEXT and HANDLER(s) are defined in the fsm description
             file, the CONTEXT is initialized with *args and **kwargs,
-            and bound to each action routine as the first argument.
+            and bound to each action routine and the exception routine as the
+            first argument.
         """
         if self.context:
             self.ctx.context = self.context(*args, **kwargs)
             for n, h in self.handlers.items():
                 self.handlers[n] = partial(h, self.context)
+            if self.exception:
+                self.ctx.exception = partial(self.exception, self.context)
 
     def build(self, **actions):
         """Construct an FSM from a parsed fsm description file.
@@ -164,6 +175,7 @@ class Parser(object):
         fsm = FSM.FSM(states.values())
         fsm.state = self.first_state
         fsm.context = self.context
+        fsm.exception = self.exception
         return fsm
 
     @staticmethod

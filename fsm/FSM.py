@@ -3,6 +3,7 @@
     MIT License
     https://github.com/robertchase/fsm/blob/master/LICENSE
 """
+DEFAULT = '__default__'
 
 
 class STATE(object):
@@ -60,6 +61,7 @@ class FSM(object):
         self.on_state_change = lambda x, y: None
         self.trace = lambda a, b, c, d: None
         self.undefined = lambda a, b, c, d: None
+        self.exception = None
 
     @property
     def state(self):
@@ -104,9 +106,10 @@ class FSM(object):
                 state_event = self._state.events[event]
 
             # --- or default event handler
-            elif 'default' in self._state.events:
+            elif DEFAULT in self.states and \
+                    event in self.states[DEFAULT].events:
                 is_default = True
-                state_event = self._state.events['default']
+                state_event = self.states[DEFAULT].events[event]
 
             # --- or oops
             else:
@@ -121,7 +124,13 @@ class FSM(object):
                 return False  # event not handled!
 
             # --- handle, if non-null event is returned, keep going
-            event = self._handle(state_event)
+            try:
+                event = self._handle(state_event)
+            except Exception as e:
+                if not self.exception:
+                    raise
+                event = self.exception(e)
+
             is_internal = True  # every event after the first event is internal
 
         return True  # OK

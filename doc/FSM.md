@@ -47,8 +47,7 @@ EVENT event_name <new_state>
 
 The `event` directive describes what happens when an `event` arrives
 while the `fsm` is in the current `state`.
-Any subsequent `action` directives will apply to this `event` until a new
-`state`, `event`, `enter`, `exit`, `context` or `handler`
+Any subsequent `action` directives will apply to this `event` until a non-`action`
 directive is encountered.
 
 If a `new_state` argument is specified,
@@ -127,3 +126,39 @@ HANDLER name path
 
 The `handler` directive defines a callable to be invoked for
 an `action` defined in the finite state machine.
+
+### EXCEPTION
+
+```
+EXCEPTION path
+```
+
+The `exception` directive defines a handler to be invoked
+if an `action routine` raises an `Exception`.
+The handler is provided with the `Exception` object.
+If `CONTEXT` is defined,
+the handler is provided with the `context` followed by the `Exception`.
+
+The handler can return an `event` name, which will
+be handled in the current `state`.
+
+If not defined, an `Exception` will not be handled by the `FSM`.
+
+### DEFAULT
+
+```
+DEFAULT event_name <new_state>
+```
+
+The `default` directive defines an `event` that is global
+to the `FSM`. If an `event` arrives in a `state` for which the
+`event` is not defined, then the `default` event, if specified, will
+be used. A `default` event is processed in the current `state`.
+
+Any subsequent `action` directives will apply to this `event` until a
+non-`action`
+directive is encountered.
+
+If a `new_state` argument is specified,
+the `fsm` will transition to that `state` after processing any
+`action` directives associated with the `event`.

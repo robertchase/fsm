@@ -7,6 +7,9 @@
 from ergaleia.import_by_path import import_by_path
 
 
+from fsm.FSM import DEFAULT
+
+
 class TooFewTokens(Exception):
     """Too few tokens on an fsm description line."""
     def __init__(self, directive, line):
@@ -82,6 +85,7 @@ class Context(object):
         self.actions = []
         self.context = None
         self.handlers = {}
+        self.exception = None
 
         self.line = None
         self.line_num = None
@@ -126,6 +130,15 @@ def act_enter(context):
         raise DuplicateDirective('ENTER', context.line_num)
     context.state.enter = name
     context.add_action(name)
+
+
+def act_exception(context):
+    """Action routine for EXCEPTION directive."""
+    if len(context.line.split()) != 1:
+        raise ExtraToken('EXCEPTION', line=context.line_num)
+    if context.exception is not None:
+        raise DuplicateDirective('EXCEPTION', context.line_num)
+    context.exception = import_by_path(context.line)
 
 
 def act_exit(context):
@@ -188,3 +201,19 @@ def act_handler(context):
         raise DuplicateName('HANDLER', context.line_num)
     handler = import_by_path(path)
     context.handlers[name] = handler
+
+
+def act_default(context):
+    """Action routine for DEFAULT directive."""
+    args = context.line.split()
+    if len(args) == 2:
+        name, next_state = args
+    elif len(args) != 1:
+        raise ExtraToken('EVENT', 'one or two', context.line_num)
+    else:
+        name = args[0].strip()
+        next_state = None
+    if DEFAULT not in context.states:
+        context.states[DEFAULT] = State(DEFAULT)
+    context.event = Event(name, next_state)
+    context.states[DEFAULT].events[name] = context.event

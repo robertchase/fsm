@@ -3,7 +3,7 @@ from distutils.core import setup
 
 setup(
     name='fsm',
-    version='1.1.1',
+    version='1.2',
     packages=find_packages(exclude=['tests']),
     description='A finite state machine library',
     long_description="""

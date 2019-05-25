@@ -84,6 +84,24 @@ def test_exit_duplicate_directive(context_state):
         actions.act_exit(context_state)
 
 
+def test_exception(context):
+    context.line = 'fsm.actions.act_exception'
+    actions.act_exception(context)
+
+
+def test_exception_extra_token(context):
+    context.line = 'fsm.actions.act_exception foo'
+    with pytest.raises(actions.ExtraToken):
+        actions.act_exception(context)
+
+
+def test_exception_duplicate_directive(context):
+    context.line = 'fsm.actions.act_exception'
+    actions.act_exception(context)
+    with pytest.raises(actions.DuplicateDirective):
+        actions.act_exception(context)
+
+
 def test_event(context_state):
     context_state.line = 'two'
     actions.act_event(context_state)

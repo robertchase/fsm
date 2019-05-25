@@ -3,7 +3,6 @@ STATE init
 
 STATE state
     ENTER state
-    EVENT error error
     EVENT enter
         ACTION enter
     EVENT exit
@@ -16,7 +15,6 @@ STATE state
 
 STATE event
     ENTER event
-    EVENT error error
     EVENT action
         ACTION action
     EVENT event event
@@ -33,14 +31,21 @@ STATE handler
     ENTER handler
     EVENT handler handler
 
-STATE error
+STATE exception
+    ENTER exception
 
-# ---
+    EVENT state state
+    EVENT context context
+    EVENT handler handler
 
-CONTEXT fsm.actions.Context
+STATE default
+    ENTER default
+    EVENT action
+        ACTION action
 
-HANDLER action fsm.actions.act_action
-HANDLER enter fsm.actions.act_enter
-HANDLER event fsm.actions.act_event
-HANDLER exit fsm.actions.act_exit
-HANDLER state fsm.actions.act_state
+    EVENT state state
+    EVENT context context
+    EVENT handler handler
+
+DEFAULT default default
+DEFAULT exception exception
