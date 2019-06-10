@@ -76,7 +76,8 @@ class FSM(object):
         next_event = None
 
         for action in event.actions:
-            next_event = action()
+            next_event = action(*self.args)
+            self.args = []
 
         if event.next_state:
             if self._state.exit:
@@ -90,12 +91,14 @@ class FSM(object):
 
         return next_event
 
-    def handle(self, event):
+    def handle(self, event, *args):
         """Handle one event in the current state.
 
         Arguments:
         event -- name of event to handle
+        args -- optional arguments for the first action routine
         """
+        self.args = args
         is_internal = False
 
         while event:
