@@ -6,4 +6,5 @@ RUN ln -s /usr/bin/pip3 /usr/bin/pip
 RUN ln -s /usr/bin/pytest-3 /usr/bin/pytest
 
 COPY requirements.txt /opt
+RUN pip install flake8
 RUN pip install -r /opt/requirements.txt

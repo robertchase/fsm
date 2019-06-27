@@ -21,3 +21,6 @@ build:
 
 test:
 	$(DOCKER) pytest $(ARGS)
+
+flake:
+	$(DOCKER) flake8 --exclude=.git,.ropeproject fsm tests
