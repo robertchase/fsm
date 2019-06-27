@@ -89,6 +89,11 @@ class Parser(object):
         """
         return self.ctx.exception
 
+    @exception.setter
+    def exception(self, value):
+        """Set the exception handler."""
+        self.ctx.exception = value
+
     @classmethod
     def parse(cls, data):
         """Parse an fsm description file.
@@ -145,7 +150,7 @@ class Parser(object):
             for n, h in self.handlers.items():
                 self.handlers[n] = partial(h, self.context)
             if self.exception:
-                self.ctx.exception = partial(self.exception, self.context)
+                self.exception = partial(self.exception, self.context)
 
     def build(self, **actions):
         """Construct an FSM from a parsed fsm description file.
