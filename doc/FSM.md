@@ -22,7 +22,7 @@ This record's directive-type is *STATE*, and the argument value *init* is specif
 The directive-type is case insensitive, although, upper case helps legibility.
 The argument values *are* case sensitive.
 
-Leading white space is ignored, although it can help distingish between
+Leading white space is ignored, although it can help distinguish between
 different parts of the file.
 
 ## Directives

@@ -23,9 +23,9 @@ STATE on
 ```
 
 The machine starts in the state `off`. When the `press` event arrives, the action
-`turn_on` is executed, and the machine transisions to the state `on`.
+`turn_on` is executed, and the machine transitions to the state `on`.
 When the `press` event arrives in the state `on`, the action `turn_off` is
-executed, and the machine transistions back to the state `off`.
+executed, and the machine transitions back to the state `off`.
 
 This example demonstrates the key ideas of a finite state machine:
 
@@ -133,7 +133,7 @@ def turn_on():
     print('the light is on')
 ```
 
-##### Initalize the machine
+##### Initialize the machine
 
 Combine the description and the actions to create a new machine:
 
@@ -223,4 +223,4 @@ the light is on
 
 ### More fun
 
-More examples and reference documenation can be found in the `/doc` directory of the repo.
+More examples and reference documentation can be found in the `/doc` directory of the repo.
