@@ -74,11 +74,6 @@ class Parser(object):
         return self.ctx.events
 
     @property
-    def context(self):
-        """Return the context."""
-        return self.ctx.context
-
-    @property
     def handlers(self):
         """Return a dict of handler callables by name."""
         return self.ctx.handlers
@@ -121,6 +116,20 @@ class Parser(object):
                 raise UnexpectedDirective(event, num)
         return parser
 
+    def compile(self, *args, **kwargs):
+        """Bind and build and FSM from a parsed fsm.
+
+           Can safely be called multiple times on the same parser without
+           getting control structures mixed up.
+
+           parse() + compile() == load()
+        """
+        handlers = self.ctx.handlers.copy()
+        self.bind(*args, **kwargs)
+        fsm = self.build(**self.ctx.handlers)
+        self.ctx.handlers = handlers
+        return fsm
+
     @classmethod
     def load(cls, path, *args, **kwargs):
         """Parse, bind and build an FSM from an fsm description file.
@@ -145,8 +154,8 @@ class Parser(object):
             and bound to each action routine and the exception routine as the
             first argument.
         """
-        if self.context:
-            self.ctx.context = self.context(*args, **kwargs)
+        if self.ctx.context:
+            self.context = self.ctx.context(*args, **kwargs)
             for n, h in self.handlers.items():
                 self.handlers[n] = partial(h, self.context)
             if self.exception:
