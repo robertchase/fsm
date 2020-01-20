@@ -76,29 +76,36 @@ class FSM(object):
         next_event = None
 
         for action in event.actions:
-            next_event = action(*self.args)
+            next_event = action(*self.args, **self.kwargs)
             self.args = []
+            self.kwargs = {}
 
         if event.next_state:
             if self._state.exit:
-                next_event = self._state.exit()
+                next_event = self._state.exit(*self.args, **self.kwargs)
+                self.args = []
+                self.kwargs = {}
 
             self.on_state_change(event.next_state.name, self._state.name)
             self._state = event.next_state
 
             if self._state.enter:
-                next_event = self._state.enter()
+                next_event = self._state.enter(*self.args, **self.kwargs)
+                self.args = []
+                self.kwargs = {}
 
         return next_event
 
-    def handle(self, event, *args):
+    def handle(self, event, *args, **kwargs):
         """Handle one event in the current state.
 
         Arguments:
         event -- name of event to handle
         args -- optional arguments for the first action routine
+        kwargs -- optional keyword arguments for the first action routine
         """
         self.args = args
+        self.kwargs = kwargs
         is_internal = False
 
         while event:
