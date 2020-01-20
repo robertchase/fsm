@@ -1,6 +1,7 @@
-.PHONY: bash connect build test
+.PHONY: sh connect build test lint
 
 IMAGE := fsm-dev
+IMAGE := alpine-python
 NAME := fsm
 NET := --net test
 GIT := $(HOME)/git
@@ -10,8 +11,8 @@ VOLUMES := -v=$(GIT):/opt/git
 
 DOCKER := docker run $(OPT) -it --rm  $(VOLUMES) $(WORKING) $(NET) -e PYTHONPATH=. --name $(NAME) $(IMAGE)
 
-bash:
-	$(DOCKER) /bin/bash
+sh:
+	$(DOCKER) /bin/sh
 
 connect:
 	docker exec -it $(NAME) bash
@@ -22,5 +23,5 @@ build:
 test:
 	$(DOCKER) pytest $(ARGS)
 
-flake:
+lint:
 	$(DOCKER) flake8 --exclude=.git,.ropeproject fsm tests
